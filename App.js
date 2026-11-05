@@ -37,25 +37,100 @@ const [filter, setFilter] = useState('All');
     setScreen('Add');
   };
 
-  
-
-  const dishOptions = [
+  const addMenuItem = () => {
+    const cleanMenuItem = menuItem.trim();
+    const cleanMenuItemDescription = menuItemDescription.trim();
+    const menuItemPrice = Number(price);
+    const dishOptions = [
     { label: 'Starter', value: 'Starter' },
     { label: 'Main Course', value: 'Main Course' },
     { label: 'Dessert', value: 'Dessert' },
   ];
 
-  const addClient = () => {
-    // 1. Check that all fields are filled
-    if (
-      menuItem.trim() === '' ||
-      menuItemDescription.trim() === '' ||
-      price.trim() === '' ||
-      !option
-    ) {
-      alert('Please complete all fields.');
-      return;
+    if (cleanMenuItem === '') {
+      Alert.alert('Missing information', 'Please enter a menu item name.');
+    } else if (cleanMenuItemDescription === '') {
+      Alert.alert('Missing information', 'Please enter a menu item description.');
+    } else if (price.trim() === '') {
+      Alert.alert('Invalid Price', 'Please enter a valid price above zero.');
+    } else {
+      const newMenuItem = {
+        id: Date.now().toString(),
+        name: cleanMenuItem,
+        description: cleanMenuItemDescription,
+        price: menuItemPrice,
+        course: option,
+      };
+
+      setMenuItens((currentMenuItems) => [
+        ...currentMenuItems,
+        newMenuItem,
+      ]);
+
+      clearForm();
+      setFilter('All');
+      setScreen('Home');
+
+      Alert.alert('Success', 'Menu item added successfully!');
     }
+  };
+
+  const deleteMenuItem = (menuItemId) => {
+    setMenuItens((currentMenuItems) =>
+      currentMenuItems.filter((item) => item.id !== menuItemId)
+    );
+  };
+
+  const confirmDelete = (menuItem) => {
+    Alert.alert(
+      'Delete Menu Item',
+      `Are you sure you want to delete "${menuItem.name}"?`,
+      [
+        { text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteMenuItem(menuItem.id),
+        },
+      ]
+    );
+  };
+
+  const calculateAverage = (selectedCourse) => {
+    const categoryItems = clients.filter(
+      (item) => item.course === selectedCourse
+    );
+
+    if (categoryItems.length === 0) {
+      return 0;
+    };
+
+    const total = categoryItems.reduce(
+      (sum, item) => sum + menuItemPrice,
+      0
+    );
+
+    return total / categoryItems.length;
+  };
+
+  const formartPrice = (amount) => {
+    return `R ${amount.toLocaleString('en-ZA', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  const filteredMenuItems = items.filter((item) => {
+    if (filter === 'All') {
+      return true;
+    }
+    
+    return item.course === filter;
+  });
+
+
 
     // 2. Create the new client/record object
     const newClient = {
@@ -146,7 +221,7 @@ const [filter, setFilter] = useState('All');
       />
     </View>
   );
-}
+
 
 const styles = StyleSheet.create({
   container: {
