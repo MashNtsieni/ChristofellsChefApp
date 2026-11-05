@@ -158,7 +158,7 @@ const [filter, setFilter] = useState('All');
     );
   };
 
-  const FilterButton = ({title}) => {
+const FilterButton = ({title}) => {
     const selected = filter === title;
 
     return (
@@ -181,7 +181,7 @@ const [filter, setFilter] = useState('All');
     );
   };
 
-  const AverageCard = ({ title, courseName}) => {
+const AverageCard = ({ title, courseName}) => {
     return (
       <View style={styles.averageCard}>
         <Text style={styles.AverageTitle}>{title}</Text>
@@ -192,98 +192,240 @@ const [filter, setFilter] = useState('All');
     );
   };
 
-    // 2. Create the new client/record object
-    const newClient = {
-      id: Date.now().toString(),
-      menuItem,
-      menuItemDescription,
-      price,
-      // Extract string value if option is an object
-  course: typeof option === 'object' && option !== null ? (option.label || option.value) : option,
-    };
-
-    // 3. Add to state immutably
-    setClients(prevClients => [...prevClients, newClient]);
-
-    // 4. Clear all inputs
-    setMenuItem('');
-    setMenuItemDescription('');
-    setPrice('');
-    setOption(null);
-  };
-
+const HomeScreen = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>Christofell's Chef App</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Menu Item Name"
-        value={menuItem}
-        onChangeText={setMenuItem}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Menu Item Description"
-        value={menuItemDescription}
-        onChangeText={setMenuItemDescription}
-      />
-
-      <Dropdown
-        style={styles.dropdown}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        data={dishOptions}
-        maxHeight={200}
-        labelField="label"
-        valueField="value"
-        placeholder="Select Dish Course"
-        value={option}
-        onChange={(item) => {
-          setOption(item.value);
-        }}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Price"
-        keyboardType="numeric"
-        value={price}
-        onChangeText={setPrice}
-      />
-
-      <TouchableOpacity style={styles.button} onPress={addClient}>
-        <Text style={styles.buttonText}>Add Record</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.subHeading}>Submitted Records</Text>
-
+    <SafeAreaView style={styles.safeArea}>
       <FlatList
-        data={clients}
+        data={sortedMenuItems}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardText}>
-              Menu Item: {item.menuItem} 
-             </Text>
-             <Text style={styles.cardText}>
-  Menu Item Description: {item.menuItemDescription}
-</Text>
-            <Text style={styles.cardText}>
-              Dish Course: {item.course}
-            </Text>
-            <Text style={styles.cardText}>
-              Price: R{item.price}
-            </Text>
+        contentContainerStyle={styles.homeContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <>
+          <View style={styles.header}>
+            <View style={styles.headerText}>
+              <Text Style={styles.mainTitle}>Christofell's Chef App</Text>
+              <Text style={styles.subTitle}>Manage Your Menu Items
+              </Text>
+            </View>
+
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={openAddMenuItemScreen}
+          >
+            <Text style={styles.addButtonText}>Add Menu Item</Text>
+          </TouchableOpacity>
          </View>
+
+         <Text style={styles.sectionTitle}>Average Prices</Text>
+
+         <AverageCard title="Average Starter Price" courseName="Starter" />
+         <AverageCard title="Average Main Course Price" courseName="Main Course" />
+         <AverageCard title="Average Dessert Price" courseName="Dessert" 
+         />
+        
+         <Text style={styles.sectionTitle}>Filter Menu Items</Text>
+
+         <ScrollView
+           horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.filterRow}
+            >
+              <FilterButton title="All" />
+              <FilterButton title="Starter" />
+              <FilterButton title="Main Course" />
+              <FilterButton title="Dessert" />
+         </ScrollView>
+
+        <View style={styles.listHeading}>
+          <Text style={styles.sectionTitle}>
+            {filter === 'All' ? 'All Menu Items' : filter}
+          </Text>
+
+          <Text style={styles.itemCount}>
+            {sortedMenuItems.length}{''}
+            {sortedMenuItems.length === 1
+              ? ' item'
+              : ' items'}
+          </Text>
+        </View>
+
+        {sortedMenuItems.length === 0 && (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>
+              No Menu Items Listed
+            </Text>
+
+            <Text style={styles.emptyText}>
+              Add a menu item or select another filter.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.emptyButton}
+              onPress={openAddMenuItemScreen}
+              >
+                <Text style={styles.emptyButtonText}>
+                  Add First Menu Item
+                </Text>
+              </TouchableOpacity>
+          </View>
         )}
-      />
-    </View>
+      </>
+      }
+    renderItem={({item}) => (
+      <View style={styles.menuItemCard}>
+        <View style={styles.menuItemHeader}>
+          <View style={styles.menuItemDetails}>
+            <Text style={styles.menuItemName}>{item.name}</Text>
+            <Text style={styles.menuItemDescription}>
+              {item.description}
+            </Text>
+          </View>
+
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryBadgeText}>
+              {item.course}
+            </Text>
+          </View>
+        </View>
+
+        <Text style={styles.menuItemPrice}>
+          {formatPrice(item.price)}
+        </Text>
+
+        <Text style={styles.priceDescription}>
+          {item.category === 'Starter'
+            ? 'Starter'
+            : item.category === 'Main Course'
+            ? 'Main Course'
+            : 'Dessert'}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => confirmDelete(item)}
+          >
+            <Text style={styles.deleteButtonText}>
+              Delete Menu Item
+            </Text>
+          </TouchableOpacity>
+      </View>
+    )}
+    />
+     </SafeAreaView>
   );
+};
+
+const AddMenuItemScreen = () => {
+  return (
+    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={styles.screen}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    {'>'}
+      <ScrollView
+        contentContainerStyle={styles.formContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.formHeader}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => setScreen('Home')}
+            >
+              <Text style={styles.backButoonText}>Back</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.formTitle}>Add Menu Item</Text>
+          </View>
+
+          <Text style={styles.formDescription}>
+            Enter the menu item information and select how the menu item will be listed.
+          </Text>
+
+          <View style={styles.formCard}>
+            <Text style={styles.label}>Menu Item Name</Text>
+
+            <TextInput
+            style={styles.input}
+            placeholder="Enter Menu Item Name"
+            placeholderTextColor="#FFFFFF"
+            value={menuItem}
+            onChangeText={setMenuItem}
+            />
+
+            <Text style={styles.label}>Menu Item Description</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Menu Item Description"
+              placeholderTextColor="#FFFFFF"
+              value={menuItemDescription}
+              onChangeText={setMenuItemDescription}
+            />
+
+            <Text style={styles.label}>Dish Course</Text>
+
+            <Dropdown
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              data={[
+                { label: 'Starter', value: 'Starter' },
+                { label: 'Main Course', value: 'Main Course' },
+                { label: 'Dessert', value: 'Dessert' }
+              ]}
+              maxHeight={200}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Dish Course"
+              value={option}
+              onChange={(item) => {
+                setOption(item.value);
+              }}
+            />
+
+            <Text style={styles.label}>Price</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Price"
+              placeholderTextColor="#FFFFFF"
+              keyboardType="numeric"
+              value={price}
+              onChangeText={setPrice}
+            />
+
+            <View style={styles.selectionBox}>
+              <Text style={styles.selectionBoxText}>
+                Selected Dish Course: {option || 'None'}
+              </Text>
+
+              <Text style={styles.selectionValue}>{category}</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={addMenuItem}
+            >
+              <Text style={styles.saveButtonText}>Add Menu Item</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setScreen('Home')}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
 
 
-const styles = StyleSheet.create({
+   const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
