@@ -19,11 +19,11 @@ export default function App() {
 const [screen, setScreen] = useState('Home');
 const [filter, setFilter] = useState('All');
 
+  const [menuItems, setMenuItems] = useState([]);
   const [menuItem, setMenuItem] = useState('');
   const [menuItemDescription, setMenuItemDescription] = useState('');
   const [price, setPrice] = useState('');
   const [option, setOption] = useState(null);
-  const [clients, setClients] = useState([]);
 
   const clearForm = () => {
     setMenuItem('');
@@ -41,18 +41,15 @@ const [filter, setFilter] = useState('All');
     const cleanMenuItem = menuItem.trim();
     const cleanMenuItemDescription = menuItemDescription.trim();
     const menuItemPrice = Number(price);
-    const dishOptions = [
-    { label: 'Starter', value: 'Starter' },
-    { label: 'Main Course', value: 'Main Course' },
-    { label: 'Dessert', value: 'Dessert' },
-  ];
 
     if (cleanMenuItem === '') {
       Alert.alert('Missing information', 'Please enter a menu item name.');
     } else if (cleanMenuItemDescription === '') {
       Alert.alert('Missing information', 'Please enter a menu item description.');
-    } else if (price.trim() === '') {
+    } else if (!Number.isFinite(menuItemPrice) || menuItemPrice <= 0) {
       Alert.alert('Invalid Price', 'Please enter a valid price above zero.');
+    } else if (!option) {
+      Alert.alert('Missing information', 'Please select a dish course.');
     } else {
       const newMenuItem = {
         id: Date.now().toString(),
@@ -62,7 +59,7 @@ const [filter, setFilter] = useState('All');
         course: option,
       };
 
-      setMenuItens((currentMenuItems) => [
+      setMenuItems((currentMenuItems) => [
         ...currentMenuItems,
         newMenuItem,
       ]);
@@ -76,7 +73,7 @@ const [filter, setFilter] = useState('All');
   };
 
   const deleteMenuItem = (menuItemId) => {
-    setMenuItens((currentMenuItems) =>
+    setMenuItems((currentMenuItems) =>
       currentMenuItems.filter((item) => item.id !== menuItemId)
     );
   };
@@ -99,7 +96,7 @@ const [filter, setFilter] = useState('All');
   };
 
   const calculateAverage = (selectedCourse) => {
-    const categoryItems = clients.filter(
+    const categoryItems = menuItems.filter(
       (item) => item.course === selectedCourse
     );
 
@@ -122,7 +119,7 @@ const [filter, setFilter] = useState('All');
     })}`;
   };
 
-  const filteredMenuItems = items.filter((item) => {
+  const filteredMenuItems = menuItems.filter((item) => {
     if (filter === 'All') {
       return true;
     }
@@ -131,33 +128,10 @@ const [filter, setFilter] = useState('All');
   });
 
   const sortedMenuItems = [...filteredMenuItems].sort(
-    (firstItem, secondItem) =>
-      firstItem.price - secondItem.price
+    (firstMenuItem, secondMenuItem) =>
+      firstMenuItem.price - secondMenuItem.price
   );
   
-  const MenuItemTypeButton = ({title}) => {
-    const selected = course === title;
-
-    return (
-      <TouchableOpacity
-        style={[
-          styles.menuItemTypeButton,
-          selected && styles.selectedMenuItemType,
-        ]}
-        onPress={() => setCourse(title)}
-      >
-           <Text
-            style={[
-              styles.menuItemTypeText,
-              selected && styles.selectedButtonText,
-            ]}
-          >
-            {title}
-          </Text>
-       </TouchableOpacity>
-    );
-  };
-
 const FilterButton = ({title}) => {
     const selected = filter === title;
 
@@ -204,7 +178,7 @@ const HomeScreen = () => {
           <>
           <View style={styles.header}>
             <View style={styles.headerText}>
-              <Text Style={styles.mainTitle}>Christofell's Chef App</Text>
+              <Text style={styles.mainTitle}>Christofell's Chef App</Text>
               <Text style={styles.subTitle}>Manage Your Menu Items
               </Text>
             </View>
@@ -294,11 +268,7 @@ const HomeScreen = () => {
         </Text>
 
         <Text style={styles.priceDescription}>
-          {item.category === 'Starter'
-            ? 'Starter'
-            : item.category === 'Main Course'
-            ? 'Main Course'
-            : 'Dessert'}
+          {item.course}
         </Text>
 
         <TouchableOpacity
@@ -320,9 +290,9 @@ const AddMenuItemScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
     <KeyboardAvoidingView
-      style={styles.screen}>
+      style={styles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    {'>'}
+    >
       <ScrollView
         contentContainerStyle={styles.formContent}
         keyboardShouldPersistTaps="handled"
@@ -380,8 +350,8 @@ const AddMenuItemScreen = () => {
               valueField="value"
               placeholder="Select Dish Course"
               value={option}
-              onChange={(item) => {
-                setOption(item.value);
+              onChange={ (menuItem) => {
+                setOption(menuItem.value);
               }}
             />
 
@@ -401,7 +371,6 @@ const AddMenuItemScreen = () => {
                 Selected Dish Course: {option || 'None'}
               </Text>
 
-              <Text style={styles.selectionValue}>{category}</Text>
             </View>
 
             <TouchableOpacity
@@ -433,6 +402,85 @@ return <HomeScreen />;
 
 
    const styles = StyleSheet.create({
+    safeArea: {
+    flex: 1,
+    backgroundColor: '#E1607C',
+  },
+
+  screen: {
+    flex: 1,
+  },
+
+  homeContent: {
+    padding: 18,
+    paddingBottom: 50,
+  },
+
+  header: {
+    marginBottom: 26,
+  },
+
+  headerText: {
+    marginBottom: 16,
+  },
+
+  mainTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  subtitle: {
+    fontSize: 15,
+    color: '#FFFFFF'
+  },
+
+  addButton: {
+    backgroundColor: '#ed94a8',
+    paddingVertical: 13,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+
+  averageCard: {
+    backgroundColor: '#ED94A8',
+    borderWidth: 1,
+    borderColor: '#b84c65',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 9,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  averageTitle: {
+    fontSize: 15,
+    color: '#FFFFFF',
+  },
+
+  averageAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  
+
+
+  
   container: {
     flex: 1,
     padding: 20,
@@ -479,7 +527,7 @@ return <HomeScreen />;
   },
 
   button: {
-    backgroundColor: '#ED94A8',
+    backgroundColor: '#ed94a8',
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
