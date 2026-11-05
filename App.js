@@ -424,6 +424,13 @@ const AddMenuItemScreen = () => {
   );
 };
 
+if (screen === 'Add') {
+  return <AddMenuItemScreen />;
+}
+
+return <HomeScreen />;
+}
+
 
    const styles = StyleSheet.create({
   container: {
