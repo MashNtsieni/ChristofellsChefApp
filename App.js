@@ -108,14 +108,14 @@ const [filter, setFilter] = useState('All');
     };
 
     const total = categoryItems.reduce(
-      (sum, item) => sum + menuItemPrice,
+      (sum, item) => sum + item.price,
       0
     );
 
     return total / categoryItems.length;
   };
 
-  const formartPrice = (amount) => {
+  const formatPrice = (amount) => {
     return `R ${amount.toLocaleString('en-ZA', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -135,7 +135,62 @@ const [filter, setFilter] = useState('All');
       firstItem.price - secondItem.price
   );
   
+  const MenuItemTypeButton = ({title}) => {
+    const selected = course === title;
 
+    return (
+      <TouchableOpacity
+        style={[
+          styles.menuItemTypeButton,
+          selected && styles.selectedMenuItemType,
+        ]}
+        onPress={() => setCourse(title)}
+      >
+           <Text
+            style={[
+              styles.menuItemTypeText,
+              selected && styles.selectedButtonText,
+            ]}
+          >
+            {title}
+          </Text>
+       </TouchableOpacity>
+    );
+  };
+
+  const FilterButton = ({title}) => {
+    const selected = filter === title;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.filterButton,
+          selected && styles.selectedFilterButton,
+        ]}
+        onPress={() => setFilter(title)}
+      >
+        <Text
+        style={[
+          styles.filterButtonText,
+          selected && styles.selectedFilterButtonText,
+        ]}
+        >
+          {title}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const AverageCard = ({ title, courseName}) => {
+    return (
+      <View style={styles.averageCard}>
+        <Text style={styles.AverageTitle}>{title}</Text>
+        <Text style={styles.averageAmount}>
+          {formatPrice(calculateAverage(courseName))}
+        </Text>
+      </View>
+    );
+  };
 
     // 2. Create the new client/record object
     const newClient = {
