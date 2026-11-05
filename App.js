@@ -130,6 +130,11 @@ const [filter, setFilter] = useState('All');
     return item.course === filter;
   });
 
+  const sortedMenuItems = [...filteredMenuItems].sort(
+    (firstItem, secondItem) =>
+      firstItem.price - secondItem.price
+  );
+  
 
 
     // 2. Create the new client/record object
