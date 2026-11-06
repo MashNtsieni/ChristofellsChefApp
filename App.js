@@ -68,6 +68,223 @@ const SearchBar = ({ onSearch, placeholder = 'Search...' }) => {
 
 const FILTERS = ['All', 'Starter', 'Main Course', 'Dessert'];
 
+const FilterButton = ({ title, filter, onChange }) => {
+  const selected = filter === title;
+
+  return (
+    <TouchableOpacity
+      style={[styles.filterButton, selected && styles.selectedFilterButton]}
+      onPress={() => onChange(title)}
+    >
+      <Text
+        style={[
+          styles.filterButtonText,
+          selected && styles.selectedFilterButtonText,
+        ]}
+      >
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
+};
+
+const AverageCard = ({ title, courseName, calculateAverage, formatPrice }) => (
+  <View style={styles.averageCard}>
+    <Text style={styles.averageTitle}>{title}</Text>
+    <Text style={styles.averageAmount}>{formatPrice(calculateAverage(courseName))}</Text>
+  </View>
+);
+
+const HomeHeader = ({
+  filter,
+  setFilter,
+  sortedMenuItems,
+  onAddMenuItem,
+  calculateAverage,
+  formatPrice,
+  setSearchQuery,
+}) => (
+  <>
+    <View style={styles.header}>
+      <View style={styles.headerText}>
+        <Text style={styles.mainTitle}>Christofell's Chef App</Text>
+        <Text style={styles.subTitle}>Manage Your Menu Items</Text>
+      </View>
+
+      <SearchBar onSearch={setSearchQuery} />
+
+      <TouchableOpacity style={styles.addButton} onPress={onAddMenuItem}>
+        <Text style={styles.addButtonText}>Add Menu Item</Text>
+      </TouchableOpacity>
+    </View>
+
+    <Text style={styles.sectionTitle}>Average Prices</Text>
+    <AverageCard
+      title="Average Starter Price"
+      courseName="Starter"
+      calculateAverage={calculateAverage}
+      formatPrice={formatPrice}
+    />
+    <AverageCard
+      title="Average Main Course Price"
+      courseName="Main Course"
+      calculateAverage={calculateAverage}
+      formatPrice={formatPrice}
+    />
+    <AverageCard
+      title="Average Dessert Price"
+      courseName="Dessert"
+      calculateAverage={calculateAverage}
+      formatPrice={formatPrice}
+    />
+
+    <Text style={styles.sectionTitle}>Filter Menu Items</Text>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filterRow}
+    >
+      {FILTERS.map((title) => (
+        <FilterButton
+          key={title}
+          title={title}
+          filter={filter}
+          onChange={setFilter}
+        />
+      ))}
+    </ScrollView>
+
+    <View style={styles.listHeading}>
+      <Text style={styles.sectionTitle}>
+        {filter === 'All' ? 'All Menu Items' : filter}
+      </Text>
+
+      <Text style={styles.itemCount}>
+        {sortedMenuItems.length}
+        {sortedMenuItems.length === 1 ? ' item' : ' items'}
+      </Text>
+    </View>
+
+    {sortedMenuItems.length === 0 && (
+      <View style={styles.emptyCard}>
+        <Text style={styles.emptyTitle}>No Menu Items Listed</Text>
+        <Text style={styles.emptyText}>Add a menu item or select another filter.</Text>
+
+        <TouchableOpacity style={styles.emptyButton} onPress={onAddMenuItem}>
+          <Text style={styles.emptyButtonText}>Add First Menu Item</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+  </>
+);
+
+const AddMenuItemScreen = ({
+  editingItemId,
+  formData,
+  onUpdateFormField,
+  onSaveMenuItem,
+  onCancel,
+}) => {
+  const isEditMode = editingItemId !== null;
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.screen}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={styles.formContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.formHeader}>
+            <TouchableOpacity style={styles.backButton} onPress={onCancel}>
+              <Text style={styles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.formTitle}>
+              {isEditMode ? 'Edit Menu Item' : 'Add Menu Item'}
+            </Text>
+          </View>
+
+          <Text style={styles.formDescription}>
+            {isEditMode
+              ? 'Update the menu item details below.'
+              : 'Enter the menu item information and select how the menu item will be listed.'}
+          </Text>
+
+          <View style={styles.formCard}>
+            <Text style={styles.label}>Menu Item Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Menu Item Name"
+              placeholderTextColor="#FFFFFF"
+              value={formData.name}
+              onChangeText={(value) => onUpdateFormField('name', value)}
+            />
+
+            <Text style={styles.label}>Menu Item Description</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Menu Item Description"
+              placeholderTextColor="#FFFFFF"
+              value={formData.description}
+              onChangeText={(value) => onUpdateFormField('description', value)}
+            />
+
+            <Text style={styles.label}>Dish Course</Text>
+            <Dropdown
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              data={[
+                { label: 'Starter', value: 'Starter' },
+                { label: 'Main Course', value: 'Main Course' },
+                { label: 'Dessert', value: 'Dessert' },
+              ]}
+              maxHeight={200}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Dish Course"
+              value={formData.course}
+              onChange={(selectedCourse) =>
+                onUpdateFormField('course', selectedCourse.value)
+              }
+            />
+
+            <Text style={styles.label}>Price</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Price"
+              placeholderTextColor="#FFFFFF"
+              keyboardType="numeric"
+              value={formData.price}
+              onChangeText={(value) => onUpdateFormField('price', value)}
+            />
+
+            <View style={styles.selectionBox}>
+              <Text style={styles.selectionBoxText}>
+                Selected Dish Course: {formData.course || 'None'}
+              </Text>
+            </View>
+
+            <TouchableOpacity style={styles.saveButton} onPress={onSaveMenuItem}>
+              <Text style={styles.saveButtonText}>
+                {isEditMode ? 'Update Menu Item' : 'Add Menu Item'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
 export default function App() {
   const [screen, setScreen] = useState('Home');
   const [filter, setFilter] = useState('All');
@@ -225,33 +442,6 @@ export default function App() {
     (firstMenuItem, secondMenuItem) => firstMenuItem.price - secondMenuItem.price
   );
 
-  const FilterButton = ({ title }) => {
-    const selected = filter === title;
-
-    return (
-      <TouchableOpacity
-        style={[styles.filterButton, selected && styles.selectedFilterButton]}
-        onPress={() => setFilter(title)}
-      >
-        <Text
-          style={[
-            styles.filterButtonText,
-            selected && styles.selectedFilterButtonText,
-          ]}
-        >
-          {title}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const AverageCard = ({ title, courseName }) => (
-    <View style={styles.averageCard}>
-      <Text style={styles.averageTitle}>{title}</Text>
-      <Text style={styles.averageAmount}>{formatPrice(calculateAverage(courseName))}</Text>
-    </View>
-  );
-
   const renderMenuItem = ({ item }) => (
     <View style={styles.menuItemCard}>
       <View style={styles.menuItemHeader}>
@@ -286,69 +476,6 @@ export default function App() {
     </View>
   );
 
-  const HomeHeader = () => (
-    <>
-      <View style={styles.header}>
-        <View style={styles.headerText}>
-          <Text style={styles.mainTitle}>Christofell's Chef App</Text>
-          <Text style={styles.subTitle}>Manage Your Menu Items</Text>
-        </View>
-
-        <SearchBar onSearch={setSearchQuery} />
-
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={openAddMenuItemScreen}
-        >
-          <Text style={styles.addButtonText}>Add Menu Item</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.sectionTitle}>Average Prices</Text>
-      <AverageCard title="Average Starter Price" courseName="Starter" />
-      <AverageCard title="Average Main Course Price" courseName="Main Course" />
-      <AverageCard title="Average Dessert Price" courseName="Dessert" />
-
-      <Text style={styles.sectionTitle}>Filter Menu Items</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        {FILTERS.map((title) => (
-          <FilterButton key={title} title={title} />
-        ))}
-      </ScrollView>
-
-      <View style={styles.listHeading}>
-        <Text style={styles.sectionTitle}>
-          {filter === 'All' ? 'All Menu Items' : filter}
-        </Text>
-
-        <Text style={styles.itemCount}>
-          {sortedMenuItems.length}
-          {sortedMenuItems.length === 1 ? ' item' : ' items'}
-        </Text>
-      </View>
-
-      {sortedMenuItems.length === 0 && (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>No Menu Items Listed</Text>
-          <Text style={styles.emptyText}>
-            Add a menu item or select another filter.
-          </Text>
-
-          <TouchableOpacity
-            style={styles.emptyButton}
-            onPress={openAddMenuItemScreen}
-          >
-            <Text style={styles.emptyButtonText}>Add First Menu Item</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </>
-  );
-
   const HomeScreen = () => (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
@@ -357,124 +484,34 @@ export default function App() {
         renderItem={renderMenuItem}
         contentContainerStyle={styles.homeContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={HomeHeader}
+        ListHeaderComponent={
+          <HomeHeader
+            filter={filter}
+            setFilter={setFilter}
+            sortedMenuItems={sortedMenuItems}
+            onAddMenuItem={openAddMenuItemScreen}
+            calculateAverage={calculateAverage}
+            formatPrice={formatPrice}
+            setSearchQuery={setSearchQuery}
+          />
+        }
       />
     </SafeAreaView>
   );
 
-  const AddMenuItemScreen = () => {
-    const isEditMode = editingItemId !== null;
-
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.screen}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
-          <ScrollView
-            contentContainerStyle={styles.formContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            <View style={styles.formHeader}>
-              <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => {
-                  resetForm();
-                  setScreen('Home');
-                }}
-              >
-                <Text style={styles.backButtonText}>Back</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.formTitle}>
-                {isEditMode ? 'Edit Menu Item' : 'Add Menu Item'}
-              </Text>
-            </View>
-
-            <Text style={styles.formDescription}>
-              {isEditMode
-                ? 'Update the menu item details below.'
-                : 'Enter the menu item information and select how the menu item will be listed.'}
-            </Text>
-
-            <View style={styles.formCard}>
-              <Text style={styles.label}>Menu Item Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Menu Item Name"
-                placeholderTextColor="#FFFFFF"
-                value={formData.name}
-                onChangeText={(value) => updateFormField('name', value)}
-              />
-
-              <Text style={styles.label}>Menu Item Description</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Menu Item Description"
-                placeholderTextColor="#FFFFFF"
-                value={formData.description}
-                onChangeText={(value) => updateFormField('description', value)}
-              />
-
-              <Text style={styles.label}>Dish Course</Text>
-              <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                data={[
-                  { label: 'Starter', value: 'Starter' },
-                  { label: 'Main Course', value: 'Main Course' },
-                  { label: 'Dessert', value: 'Dessert' },
-                ]}
-                maxHeight={200}
-                labelField="label"
-                valueField="value"
-                placeholder="Select Dish Course"
-                value={formData.course}
-                onChange={(selectedCourse) => updateFormField('course', selectedCourse.value)}
-              />
-
-              <Text style={styles.label}>Price</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter Price"
-                placeholderTextColor="#FFFFFF"
-                keyboardType="numeric"
-                value={formData.price}
-                onChangeText={(value) => updateFormField('price', value)}
-              />
-
-              <View style={styles.selectionBox}>
-                <Text style={styles.selectionBoxText}>
-                  Selected Dish Course: {formData.course || 'None'}
-                </Text>
-              </View>
-
-              <TouchableOpacity style={styles.saveButton} onPress={saveMenuItem}>
-                <Text style={styles.saveButtonText}>
-                  {isEditMode ? 'Update Menu Item' : 'Add Menu Item'}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => {
-                  resetForm();
-                  setScreen('Home');
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    );
-  };
-
   if (screen === 'Add') {
-    return <AddMenuItemScreen />;
+    return (
+      <AddMenuItemScreen
+        editingItemId={editingItemId}
+        formData={formData}
+        onUpdateFormField={updateFormField}
+        onSaveMenuItem={saveMenuItem}
+        onCancel={() => {
+          resetForm();
+          setScreen('Home');
+        }}
+      />
+    );
   }
 
   return <HomeScreen />;
