@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -166,12 +166,20 @@ const AverageCard = ({ title, courseName}) => {
     );
   };
 
+const renderMenuItem = ({ item}) => (
+  <View style={styles.menuItemContainer}>
+    {/* Menu item content and text input*/}
+  </View>
+)
+
 const HomeScreen = () => {
+  
   return (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
         data={sortedMenuItems}
         keyExtractor={(item) => item.id}
+        renderItem={renderMenuItem}
         contentContainerStyle={styles.homeContent}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
@@ -246,7 +254,7 @@ const HomeScreen = () => {
         )}
       </>
       }
-    renderItem={({item}) => (
+    renderMenuItem={({item}) => (
       <View style={styles.menuItemCard}>
         <View style={styles.menuItemHeader}>
           <View style={styles.menuItemDetails}>
@@ -402,7 +410,6 @@ if (screen === 'Add') {
 
 return <HomeScreen />;
 }
-
 
    const styles = StyleSheet.create({
     safeArea: {
