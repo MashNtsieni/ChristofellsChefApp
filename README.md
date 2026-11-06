@@ -1,11 +1,41 @@
-# Sample Snack app
+# Christofell's Chef App
 
-Open the `App.js` file to start writing some code. You can preview the changes directly on your phone or tablet by scanning the **QR code** or use the iOS or Android emulators. When you're done, click **Save** and share the link!
+ST10507299
 
-When you're ready to see everything that Expo provides (or if you want to use your own editor) you can **Download** your project and use it with [expo cli](https://docs.expo.dev/get-started/installation/#expo-cli)).
+Mashudu Ntsieni
 
-All projects created in Snack are publicly available, so you can easily share the link to this project via link, or embed it on a web page with the `<>` button.
+## Feedback from Part 2
 
-If you're having problems, you can tweet to us [@expo](https://twitter.com/expo) or ask in our [forums](https://forums.expo.dev/c/expo-dev-tools/61) or [Discord](https://chat.expo.dev/).
+I added the number of items on the menu on the app. I have added more commits to GitHub for the app than the last submission.
 
-Snack is Open Source. You can find the code on the [GitHub repo](https://github.com/expo/snack).
+## Changelog
+
+I deleted the original zip file which the app and the README file from the repository so that I could push commits onto the repository from VS Code
+
+### Log from when I tried to push files to the repository
+
+I pushed the files from VS Code to the GitHub repository
+
+I implemented the menu addition and deletion functionalities
+
+I added the sorting functionality for the menu items by the type of course
+
+### Created a Pull Request and merged the branches
+
+### Log after the merge
+
+I refactored the home screen layout and the add menu item screen component
+
+I added conditional rendering for add menu item screen in app component
+
+I refactored code structure for improved readability and maintainability
+
+I added new styles for menu item display and form components
+
+I updated the styles in the app component and adjusted package.json scripts in the terminal for consistency
+
+I refactored home screen to use a separate render menu item function for improved readibility
+
+I updated the app's dependencies
+
+I refactored the home header and add menu item screen components for improved structure and readability; I implemented the filter button and average card components
