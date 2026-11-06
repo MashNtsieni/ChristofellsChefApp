@@ -668,7 +668,7 @@ return <HomeScreen />;
   label: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#dd9191',
     marginBottom: 7,
   },
   
@@ -696,14 +696,12 @@ return <HomeScreen />;
     backgroundColor: '#f45b7c',
   },
 
-  courseName: {
+  courseText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
     textAlign: 'center',
   },
-
-
 
   placeholderStyle: {
     fontSize: 16,
