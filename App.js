@@ -287,6 +287,9 @@ const HomeScreen = () => {
 };
 
 const AddMenuItemScreen = () => {
+  const [menuItem, setMenuItem] = useState('');
+  const [menuItemDescription, setMenuItemDescription] = useState('');
+  const [price, setPrice] = useState('');
   return (
     <SafeAreaView style={styles.safeArea}>
     <KeyboardAvoidingView
