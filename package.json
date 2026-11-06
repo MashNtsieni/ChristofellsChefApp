@@ -13,9 +13,11 @@
     "expo-font": "~58.0.11",
     "expo-status-bar": "~58.0.4",
     "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-native": "0.88.1",
     "react-native-element-dropdown": "*",
-    "react-native-paper": "4.9.2"
+    "react-native-paper": "4.9.2",
+    "react-native-web": "^0.21.4"
   },
   "private": true,
   "name": "christofells-chef-app",

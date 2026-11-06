@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,65 +11,166 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
+import { Ionicons } from '@expo/vector-icons';
+
+const SearchBar = ({ onSearch, placeholder = 'Search...' }) => {
+  const [query, setQuery] = useState('');
+
+  const handleSearch = () => {
+    onSearch(query.trim());
+    Keyboard.dismiss();
+  };
+
+  const handleClear = () => {
+    setQuery('');
+    onSearch('');
+  };
+
+  return (
+    <View style={styles.searchBarContainer}>
+      <Ionicons
+        name="search-outline"
+        size={20}
+        color="#888"
+        style={styles.searchIcon}
+      />
+      <TextInput
+        style={styles.searchInput}
+        value={query}
+        onChangeText={setQuery}
+        placeholder={placeholder}
+        placeholderTextColor="#888"
+        returnKeyType="search"
+        onSubmitEditing={handleSearch}
+      />
+      {query.length > 0 && (
+        <TouchableOpacity
+          onPress={handleClear}
+          style={styles.clearButton}
+          accessibilityLabel="Clear search"
+        >
+          <Ionicons name="close-circle" size={18} color="#888" />
+        </TouchableOpacity>
+      )}
+      <TouchableOpacity
+        style={styles.submitButton}
+        onPress={handleSearch}
+        accessibilityLabel="Submit search"
+      >
+        <Ionicons name="arrow-forward" size={18} color="#FFF" />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const FILTERS = ['All', 'Starter', 'Main Course', 'Dessert'];
 
 export default function App() {
-
-const [screen, setScreen] = useState('Home');
-const [filter, setFilter] = useState('All');
-
+  const [screen, setScreen] = useState('Home');
+  const [filter, setFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [menuItems, setMenuItems] = useState([]);
-  const [menuItem, setMenuItem] = useState('');
-  const [menuItemDescription, setMenuItemDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [option, setOption] = useState(null);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    price: '',
+    course: null,
+  });
 
-  const clearForm = () => {
-    setMenuItem('');
-    setMenuItemDescription('');
-    setPrice('');
-    setOption(null);
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      course: null,
+    });
+    setEditingItemId(null);
   };
 
   const openAddMenuItemScreen = () => {
-    clearForm();
+    resetForm();
     setScreen('Add');
   };
 
-  const addMenuItem = () => {
-    const cleanMenuItem = menuItem.trim();
-    const cleanMenuItemDescription = menuItemDescription.trim();
-    const menuItemPrice = Number(price);
+  const openEditMenuItemScreen = (menuItem) => {
+    setEditingItemId(menuItem.id);
+    setFormData({
+      name: menuItem.name,
+      description: menuItem.description,
+      price: String(menuItem.price),
+      course: menuItem.course,
+    });
+    setScreen('Add');
+  };
+
+  const updateFormField = (field, value) => {
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      [field]: value,
+    }));
+  };
+
+  const saveMenuItem = () => {
+    const cleanMenuItem = formData.name.trim();
+    const cleanMenuItemDescription = formData.description.trim();
+    const menuItemPrice = Number(formData.price);
 
     if (cleanMenuItem === '') {
       Alert.alert('Missing information', 'Please enter a menu item name.');
-    } else if (cleanMenuItemDescription === '') {
+      return;
+    }
+
+    if (cleanMenuItemDescription === '') {
       Alert.alert('Missing information', 'Please enter a menu item description.');
-    } else if (!Number.isFinite(menuItemPrice) || menuItemPrice <= 0) {
+      return;
+    }
+
+    if (!Number.isFinite(menuItemPrice) || menuItemPrice <= 0) {
       Alert.alert('Invalid Price', 'Please enter a valid price above zero.');
-    } else if (!option) {
+      return;
+    }
+
+    if (!formData.course) {
       Alert.alert('Missing information', 'Please select a dish course.');
+      return;
+    }
+
+    if (editingItemId) {
+      setMenuItems((currentMenuItems) =>
+        currentMenuItems.map((item) =>
+          item.id === editingItemId
+            ? {
+                ...item,
+                name: cleanMenuItem,
+                description: cleanMenuItemDescription,
+                price: menuItemPrice,
+                course: formData.course,
+              }
+            : item
+        )
+      );
+
+      Alert.alert('Success', 'Menu item updated successfully!');
     } else {
       const newMenuItem = {
         id: Date.now().toString(),
         name: cleanMenuItem,
         description: cleanMenuItemDescription,
         price: menuItemPrice,
-        course: option,
+        course: formData.course,
       };
 
-      setMenuItems((currentMenuItems) => [
-        ...currentMenuItems,
-        newMenuItem,
-      ]);
-
-      clearForm();
-      setFilter('All');
-      setScreen('Home');
-
+      setMenuItems((currentMenuItems) => [...currentMenuItems, newMenuItem]);
       Alert.alert('Success', 'Menu item added successfully!');
     }
+
+    resetForm();
+    setFilter('All');
+    setScreen('Home');
   };
 
   const deleteMenuItem = (menuItemId) => {
@@ -83,9 +184,7 @@ const [filter, setFilter] = useState('All');
       'Delete Menu Item',
       `Are you sure you want to delete "${menuItem.name}"?`,
       [
-        { text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
@@ -96,58 +195,49 @@ const [filter, setFilter] = useState('All');
   };
 
   const calculateAverage = (selectedCourse) => {
-    const categoryItems = menuItems.filter(
-      (item) => item.course === selectedCourse
-    );
+    const categoryItems = menuItems.filter((item) => item.course === selectedCourse);
 
     if (categoryItems.length === 0) {
       return 0;
-    };
+    }
 
-    const total = categoryItems.reduce(
-      (sum, item) => sum + item.price,
-      0
-    );
-
+    const total = categoryItems.reduce((sum, item) => sum + item.price, 0);
     return total / categoryItems.length;
   };
 
-  const formatPrice = (amount) => {
-    return `R ${amount.toLocaleString('en-ZA', {
+  const formatPrice = (amount) =>
+    `R ${Number(amount || 0).toLocaleString('en-ZA', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
-  };
 
   const filteredMenuItems = menuItems.filter((item) => {
-    if (filter === 'All') {
-      return true;
-    }
-    
-    return item.course === filter;
+    const matchesCourse = filter === 'All' || item.course === filter;
+    const query = searchQuery.toLowerCase();
+    const matchesSearch = [item.name, item.description, item.course].some((value) =>
+      value.toLowerCase().includes(query)
+    );
+
+    return matchesCourse && matchesSearch;
   });
 
   const sortedMenuItems = [...filteredMenuItems].sort(
-    (firstMenuItem, secondMenuItem) =>
-      firstMenuItem.price - secondMenuItem.price
+    (firstMenuItem, secondMenuItem) => firstMenuItem.price - secondMenuItem.price
   );
-  
-const FilterButton = ({title}) => {
+
+  const FilterButton = ({ title }) => {
     const selected = filter === title;
 
     return (
       <TouchableOpacity
-        style={[
-          styles.filterButton,
-          selected && styles.selectedFilterButton,
-        ]}
+        style={[styles.filterButton, selected && styles.selectedFilterButton]}
         onPress={() => setFilter(title)}
       >
         <Text
-        style={[
-          styles.filterButtonText,
-          selected && styles.selectedFilterButtonText,
-        ]}
+          style={[
+            styles.filterButtonText,
+            selected && styles.selectedFilterButtonText,
+          ]}
         >
           {title}
         </Text>
@@ -155,26 +245,111 @@ const FilterButton = ({title}) => {
     );
   };
 
-const AverageCard = ({ title, courseName}) => {
-    return (
-      <View style={styles.averageCard}>
-        <Text style={styles.AverageTitle}>{title}</Text>
-        <Text style={styles.averageAmount}>
-          {formatPrice(calculateAverage(courseName))}
+  const AverageCard = ({ title, courseName }) => (
+    <View style={styles.averageCard}>
+      <Text style={styles.averageTitle}>{title}</Text>
+      <Text style={styles.averageAmount}>{formatPrice(calculateAverage(courseName))}</Text>
+    </View>
+  );
+
+  const renderMenuItem = ({ item }) => (
+    <View style={styles.menuItemCard}>
+      <View style={styles.menuItemHeader}>
+        <View style={styles.menuItemDetails}>
+          <Text style={styles.menuItemName}>{item.name}</Text>
+          <Text style={styles.menuItemDescription}>{item.description}</Text>
+        </View>
+
+        <View style={styles.categoryBadge}>
+          <Text style={styles.categoryBadgeText}>{item.course}</Text>
+        </View>
+      </View>
+
+      <Text style={styles.menuItemPrice}>{formatPrice(item.price)}</Text>
+      <Text style={styles.priceDescription}>{item.course}</Text>
+
+      <View style={styles.actionRow}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => openEditMenuItemScreen(item)}
+        >
+          <Text style={styles.editButtonText}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => confirmDelete(item)}
+        >
+          <Text style={styles.deleteButtonText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const HomeHeader = () => (
+    <>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.mainTitle}>Christofell's Chef App</Text>
+          <Text style={styles.subTitle}>Manage Your Menu Items</Text>
+        </View>
+
+        <SearchBar onSearch={setSearchQuery} />
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={openAddMenuItemScreen}
+        >
+          <Text style={styles.addButtonText}>Add Menu Item</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionTitle}>Average Prices</Text>
+      <AverageCard title="Average Starter Price" courseName="Starter" />
+      <AverageCard title="Average Main Course Price" courseName="Main Course" />
+      <AverageCard title="Average Dessert Price" courseName="Dessert" />
+
+      <Text style={styles.sectionTitle}>Filter Menu Items</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {FILTERS.map((title) => (
+          <FilterButton key={title} title={title} />
+        ))}
+      </ScrollView>
+
+      <View style={styles.listHeading}>
+        <Text style={styles.sectionTitle}>
+          {filter === 'All' ? 'All Menu Items' : filter}
+        </Text>
+
+        <Text style={styles.itemCount}>
+          {sortedMenuItems.length}
+          {sortedMenuItems.length === 1 ? ' item' : ' items'}
         </Text>
       </View>
-    );
-  };
 
-const renderMenuItem = ({ item}) => (
-  <View style={styles.menuItemContainer}>
-    {/* Menu item content and text input*/}
-  </View>
-)
+      {sortedMenuItems.length === 0 && (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No Menu Items Listed</Text>
+          <Text style={styles.emptyText}>
+            Add a menu item or select another filter.
+          </Text>
 
-const HomeScreen = () => {
-  
-  return (
+          <TouchableOpacity
+            style={styles.emptyButton}
+            onPress={openAddMenuItemScreen}
+          >
+            <Text style={styles.emptyButtonText}>Add First Menu Item</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </>
+  );
+
+  const HomeScreen = () => (
     <SafeAreaView style={styles.safeArea}>
       <FlatList
         data={sortedMenuItems}
@@ -182,237 +357,131 @@ const HomeScreen = () => {
         renderItem={renderMenuItem}
         contentContainerStyle={styles.homeContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <>
-          <View style={styles.header}>
-            <View style={styles.headerText}>
-              <Text style={styles.mainTitle}>Christofell's Chef App</Text>
-              <Text style={styles.subTitle}>Manage Your Menu Items
-              </Text>
-            </View>
-
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={openAddMenuItemScreen}
-          >
-            <Text style={styles.addButtonText}>Add Menu Item</Text>
-          </TouchableOpacity>
-         </View>
-
-         <Text style={styles.sectionTitle}>Average Prices</Text>
-
-         <AverageCard title="Average Starter Price" courseName="Starter" />
-         <AverageCard title="Average Main Course Price" courseName="Main Course" />
-         <AverageCard title="Average Dessert Price" courseName="Dessert" 
-         />
-        
-         <Text style={styles.sectionTitle}>Filter Menu Items</Text>
-
-         <ScrollView
-           horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterRow}
-            >
-              <FilterButton title="All" />
-              <FilterButton title="Starter" />
-              <FilterButton title="Main Course" />
-              <FilterButton title="Dessert" />
-         </ScrollView>
-
-        <View style={styles.listHeading}>
-          <Text style={styles.sectionTitle}>
-            {filter === 'All' ? 'All Menu Items' : filter}
-          </Text>
-
-          <Text style={styles.itemCount}>
-            {sortedMenuItems.length}{''}
-            {sortedMenuItems.length === 1
-              ? ' item'
-              : ' items'}
-          </Text>
-        </View>
-
-        {sortedMenuItems.length === 0 && (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>
-              No Menu Items Listed
-            </Text>
-
-            <Text style={styles.emptyText}>
-              Add a menu item or select another filter.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.emptyButton}
-              onPress={openAddMenuItemScreen}
-              >
-                <Text style={styles.emptyButtonText}>
-                  Add First Menu Item
-                </Text>
-              </TouchableOpacity>
-          </View>
-        )}
-      </>
-      }
-    renderMenuItem={({item}) => (
-      <View style={styles.menuItemCard}>
-        <View style={styles.menuItemHeader}>
-          <View style={styles.menuItemDetails}>
-            <Text style={styles.menuItemName}>{item.name}</Text>
-            <Text style={styles.menuItemDescription}>
-              {item.description}
-            </Text>
-          </View>
-
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryBadgeText}>
-              {item.course}
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.menuItemPrice}>
-          {formatPrice(item.price)}
-        </Text>
-
-        <Text style={styles.priceDescription}>
-          {item.course}
-        </Text>
-
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => confirmDelete(item)}
-          >
-            <Text style={styles.deleteButtonText}>
-              Delete Menu Item
-            </Text>
-          </TouchableOpacity>
-      </View>
-    )}
-    />
-     </SafeAreaView>
-  );
-};
-
-const AddMenuItemScreen = () => {
-  const [menuItem, setMenuItem] = useState('');
-  const [menuItemDescription, setMenuItemDescription] = useState('');
-  const [price, setPrice] = useState('');
-  return (
-    <SafeAreaView style={styles.safeArea}>
-    <KeyboardAvoidingView
-      style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={styles.formContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.formHeader}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => setScreen('Home')}
-            >
-              <Text style={styles.backButoonText}>Back</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.formTitle}>Add Menu Item</Text>
-          </View>
-
-          <Text style={styles.formDescription}>
-            Enter the menu item information and select how the menu item will be listed.
-          </Text>
-
-          <View style={styles.formCard}>
-            <Text style={styles.label}>Menu Item Name</Text>
-
-            <TextInput
-            style={styles.input}
-            placeholder="Enter Menu Item Name"
-            placeholderTextColor="#FFFFFF"
-            value={menuItem}
-            onChangeText={setMenuItem}
-            />
-
-            <Text style={styles.label}>Menu Item Description</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Menu Item Description"
-              placeholderTextColor="#FFFFFF"
-              value={menuItemDescription}
-              onChangeText={setMenuItemDescription}
-            />
-
-            <Text style={styles.label}>Dish Course</Text>
-
-            <Dropdown
-              style={styles.dropdown}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              data={[
-                { label: 'Starter', value: 'Starter' },
-                { label: 'Main Course', value: 'Main Course' },
-                { label: 'Dessert', value: 'Dessert' }
-              ]}
-              maxHeight={200}
-              labelField="label"
-              valueField="value"
-              placeholder="Select Dish Course"
-              value={option}
-              onChange={ (menuItem) => {
-                setOption(menuItem.value);
-              }}
-            />
-
-            <Text style={styles.label}>Price</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Price"
-              placeholderTextColor="#FFFFFF"
-              keyboardType="numeric"
-              value={price}
-              onChangeText={setPrice}
-            />
-
-            <View style={styles.selectionBox}>
-              <Text style={styles.selectionBoxText}>
-                Selected Dish Course: {option || 'None'}
-              </Text>
-
-            </View>
-
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={addMenuItem}
-            >
-              <Text style={styles.saveButtonText}>Add Menu Item</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setScreen('Home')}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        ListHeaderComponent={HomeHeader}
+      />
     </SafeAreaView>
   );
-};
 
-if (screen === 'Add') {
-  return <AddMenuItemScreen />;
+  const AddMenuItemScreen = () => {
+    const isEditMode = editingItemId !== null;
+
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.screen}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.formContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.formHeader}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => {
+                  resetForm();
+                  setScreen('Home');
+                }}
+              >
+                <Text style={styles.backButtonText}>Back</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.formTitle}>
+                {isEditMode ? 'Edit Menu Item' : 'Add Menu Item'}
+              </Text>
+            </View>
+
+            <Text style={styles.formDescription}>
+              {isEditMode
+                ? 'Update the menu item details below.'
+                : 'Enter the menu item information and select how the menu item will be listed.'}
+            </Text>
+
+            <View style={styles.formCard}>
+              <Text style={styles.label}>Menu Item Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Menu Item Name"
+                placeholderTextColor="#FFFFFF"
+                value={formData.name}
+                onChangeText={(value) => updateFormField('name', value)}
+              />
+
+              <Text style={styles.label}>Menu Item Description</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Menu Item Description"
+                placeholderTextColor="#FFFFFF"
+                value={formData.description}
+                onChangeText={(value) => updateFormField('description', value)}
+              />
+
+              <Text style={styles.label}>Dish Course</Text>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                data={[
+                  { label: 'Starter', value: 'Starter' },
+                  { label: 'Main Course', value: 'Main Course' },
+                  { label: 'Dessert', value: 'Dessert' },
+                ]}
+                maxHeight={200}
+                labelField="label"
+                valueField="value"
+                placeholder="Select Dish Course"
+                value={formData.course}
+                onChange={(selectedCourse) => updateFormField('course', selectedCourse.value)}
+              />
+
+              <Text style={styles.label}>Price</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Price"
+                placeholderTextColor="#FFFFFF"
+                keyboardType="numeric"
+                value={formData.price}
+                onChangeText={(value) => updateFormField('price', value)}
+              />
+
+              <View style={styles.selectionBox}>
+                <Text style={styles.selectionBoxText}>
+                  Selected Dish Course: {formData.course || 'None'}
+                </Text>
+              </View>
+
+              <TouchableOpacity style={styles.saveButton} onPress={saveMenuItem}>
+                <Text style={styles.saveButtonText}>
+                  {isEditMode ? 'Update Menu Item' : 'Add Menu Item'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => {
+                  resetForm();
+                  setScreen('Home');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  };
+
+  if (screen === 'Add') {
+    return <AddMenuItemScreen />;
+  }
+
+  return <HomeScreen />;
 }
 
-return <HomeScreen />;
-}
-
-   const styles = StyleSheet.create({
-    safeArea: {
+const styles = StyleSheet.create({
+  safeArea: {
     flex: 1,
     backgroundColor: '#E1607C',
   },
@@ -440,9 +509,39 @@ return <HomeScreen />;
     color: '#FFFFFF',
   },
 
-  subtitle: {
+  subTitle: {
     fontSize: 15,
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+  },
+
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+  },
+
+  searchIcon: {
+    marginRight: 8,
+  },
+
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    color: '#333333',
+  },
+
+  clearButton: {
+    padding: 4,
+  },
+
+  submitButton: {
+    backgroundColor: '#b84c65',
+    padding: 8,
+    borderRadius: 8,
+    marginLeft: 8,
   },
 
   addButton: {
@@ -509,8 +608,9 @@ return <HomeScreen />;
     fontWeight: '600',
   },
 
-  selectedButtonText: {
+  selectedFilterButtonText: {
     color: '#FFFFFF',
+    fontWeight: '700',
   },
 
   listHeading: {
@@ -519,7 +619,7 @@ return <HomeScreen />;
     alignItems: 'center',
   },
 
-  menuItemCount: {
+  itemCount: {
     color: '#FFFFFF',
     marginBottom: 12,
   },
@@ -544,7 +644,7 @@ return <HomeScreen />;
     marginRight: 10,
   },
 
-  menuItem: {
+  menuItemName: {
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
@@ -581,17 +681,37 @@ return <HomeScreen />;
     marginTop: 2,
   },
 
-  deleteButtonText: {
-    color: '#B42318',
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+  },
+
+  editButton: {
+    flex: 1,
+    backgroundColor: '#f9d7df',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+  },
+
+  editButtonText: {
+    color: '#7f2341',
     fontWeight: '700',
   },
 
   deleteButton: {
+    flex: 1,
     backgroundColor: '#FEE4E2',
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 16,
+  },
+
+  deleteButtonText: {
+    color: '#B42318',
+    fontWeight: '700',
   },
 
   emptyCard: {
@@ -602,7 +722,6 @@ return <HomeScreen />;
     padding: 28,
     alignItems: 'center',
   },
-
 
   emptyTitle: {
     fontSize: 18,
@@ -681,7 +800,7 @@ return <HomeScreen />;
     color: '#dd9191',
     marginBottom: 7,
   },
-  
+
   input: {
     height: 50,
     borderWidth: 1,
@@ -690,6 +809,7 @@ return <HomeScreen />;
     backgroundColor: '#F3859D',
     paddingHorizontal: 12,
     marginBottom: 12,
+    color: '#FFFFFF',
   },
 
   dropdown: {
@@ -702,15 +822,9 @@ return <HomeScreen />;
     marginBottom: 12,
   },
 
-  selectedCourse: {
-    backgroundColor: '#f45b7c',
-  },
-
-  courseText: {
+  selectedTextStyle: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontSize: 16,
   },
 
   placeholderStyle: {
@@ -725,16 +839,10 @@ return <HomeScreen />;
     marginBottom: 18,
   },
 
-  selectionLabel: {
-    fontSize: 12,
+  selectionBoxText: {
     color: '#FFFFFF',
-  },
-
-  selectionValue: {
     fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginTop: 3,
+    fontWeight: '600',
   },
 
   saveButton: {
@@ -762,6 +870,5 @@ return <HomeScreen />;
     color: '#f7214f',
     fontSize: 15,
     fontWeight: '700',
-  
   },
 });
