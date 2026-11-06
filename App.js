@@ -477,25 +477,201 @@ return <HomeScreen />;
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  
 
-
-  
-  container: {
-    flex: 1,
-    padding: 20,
-    marginTop: 40,
-    backgroundColor: '#E1607C',
+  filterRow: {
+    paddingBottom: 24,
   },
 
-  heading: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
+  filterButton: {
+    backgroundColor: '#b84c65',
+    borderRadius: 18,
+    paddingVertical: 9,
+    paddingHorizontal: 15,
+    marginRight: 8,
+  },
+
+  selectedFilterButton: {
+    backgroundColor: '#ED94A8',
+  },
+
+  filterButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+
+  selectedButtonText: {
     color: '#FFFFFF',
   },
 
+  listHeading: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  menuItemCount: {
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+
+  menuItemCard: {
+    backgroundColor: '#ED94A8',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    borderLeftWidth: 5,
+    borderLeftColor: '#b84c65',
+    elevation: 2,
+  },
+
+  menuItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+
+  menuItemDetails: {
+    flex: 1,
+    marginRight: 10,
+  },
+
+  menuItem: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  menuItemDescription: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+
+  categoryBadge: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+  },
+
+  categoryBadgeText: {
+    color: '#b84c65',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  menuItemPrice: {
+    fontSize: 21,
+    fontWeight: '700',
+    color: '#76283a',
+  },
+
+  priceDescription: {
+    fontSize: 13,
+    color: '#b84c65',
+    marginTop: 2,
+  },
+
+  deleteButtonText: {
+    color: '#B42318',
+    fontWeight: '700',
+  },
+
+  deleteButton: {
+    backgroundColor: '#FEE4E2',
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+
+  emptyCard: {
+    backgroundColor: '#ec89a0',
+    borderWidth: 1,
+    borderColor: '#d13156',
+    borderRadius: 12,
+    padding: 28,
+    alignItems: 'center',
+  },
+
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 18,
+  },
+
+  emptyButton: {
+    backgroundColor: '#d13156',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+  },
+
+  emptyButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  formContent: {
+    padding: 18,
+    paddingBottom: 50,
+  },
+
+  formHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+
+  backButton: {
+    backgroundColor: '#de869b6f',
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginRight: 14,
+  },
+
+  backButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+
+  formTitle: {
+    fontSize: 25,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  formDescription: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: '#FFFFFF',
+    marginBottom: 20,
+  },
+
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#d7d7d7',
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  label: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 7,
+  },
+  
   input: {
     height: 50,
     borderWidth: 1,
@@ -516,49 +692,68 @@ return <HomeScreen />;
     marginBottom: 12,
   },
 
+  selectedCourse: {
+    backgroundColor: '#f45b7c',
+  },
+
+  courseName: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+
+
+
   placeholderStyle: {
     fontSize: 16,
     color: '#FFFFFF',
   },
 
-  selectedTextStyle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-
-  button: {
-    backgroundColor: '#ed94a8',
-    padding: 15,
+  selectionBox: {
+    backgroundColor: '#F3859D',
     borderRadius: 8,
-    marginBottom: 20,
+    padding: 12,
+    marginBottom: 18,
   },
 
-  buttonText: {
-    color: '#FFFFFF',
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-
-  subHeading: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  selectionLabel: {
+    fontSize: 12,
     color: '#FFFFFF',
   },
 
-  card: {
-    backgroundColor: '#ED94A8',
-    padding: 15,
+  selectionValue: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 3,
+  },
+
+  saveButton: {
+    backgroundColor: '#ffffff56',
+    paddingVertical: 14,
     borderRadius: 8,
-    marginBottom: 10,
-    borderLeftWidth: 5,
-    borderLeftColor: '#b84c65',
-    elevation: 2,
+    alignItems: 'center',
   },
 
-  cardText: {
+  saveButtonText: {
+    color: '#dd5e79',
     fontSize: 16,
-    marginBottom: 5,
+    fontWeight: '700',
+  },
+
+  cancelButton: {
+    backgroundColor: '#df93a4bb',
+    paddingVertical: 13,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  cancelButtonText: {
+    color: '#f7214f',
+    fontSize: 15,
+    fontWeight: '700',
+  
   },
 });
